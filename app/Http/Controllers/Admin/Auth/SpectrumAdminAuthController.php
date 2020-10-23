@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class SpectrumAdminAuthController extends Controller
 {
-    
+
 
     /**
      * Only guests for "admin" guard are allowed except
@@ -52,6 +52,14 @@ class SpectrumAdminAuthController extends Controller
 
         // dd($admin);
         if ($admin->save()) {
+
+            $auid = $admin->uuid;
+            $title = "New Admin Registration";
+            $action = "Registration on the Admin Portal";
+            $ip_address = $request->ip();
+
+            log_activity($auid, $title, $action, null, $ip_address);
+
             $request
                 ->session()
                 ->flash('success', 'New Admin Profile Created Successfully.');
@@ -97,6 +105,15 @@ class SpectrumAdminAuthController extends Controller
                     ->with('fail', 'Your account has not been activated yet.!');
             } else {
                 $request->session()->regenerate();
+
+                $auid = Auth::guard('admin')->user()->uuid;
+                $title = "Successful Login";
+                $action = "Successful Login into the Admin Portal";
+
+                $ip_address = $request->ip();
+
+                log_activity($auid, $title, $action, null, $ip_address);
+
                 return $this->authenticated($request, Auth::guard('admin')->user())
                 ?: redirect()
                     ->intended(route('admin/dashbard'))

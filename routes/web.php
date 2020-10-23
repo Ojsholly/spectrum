@@ -27,10 +27,10 @@ Route::get('/relationship', function() {
     // $access_code = AccessCode::withTrashed()->with('books')->where('uuid', '1843baa5e2a5b140744851733dabe0b1')->get();
     // return $access_code;
     // return $access_code->books;
-    
+
     // $book_access = BookAccessCode::where('access_code_uuid', '779d819e656cb24ab0fb284f5f732b50')->delete();
     // return $book_access;
-    
+
     // $exclude_books = explode(',', $access_code->books_contained);
 
     // $filtered_books = Book::whereNotIn('id', $exclude_books)->get();
@@ -73,7 +73,7 @@ Route::group(['prefix' => 'admin',  'namespace' => 'Admin'], function () {
         Route::get('/login', 'SpectrumAdminAuthController@show_login_page')->name('admin/login');
         Route::post('/login', 'SpectrumAdminAuthController@login');
 
-        
+
         Route::post('/logout', 'SpectrumAdminAuthController@logout')->name('admin.logout');
     });
 
@@ -108,12 +108,14 @@ Route::group(['prefix' => 'admin',  'namespace' => 'Admin'], function () {
 
         Route::post('/distinct-books', 'SpectrumLicenseController@distinctBook');
         Route::put('/update-license', 'SpectrumLicenseController@update');
+
+        Route::get('/accounting-module', 'SpectrumLicenseController@accounting_module');
     });
-    
+
     Route::group(['prefix' => 'books', 'namespace' => 'Books'], function() {
         Route::get('/uploaded-books', 'SpectrumBooksController@index');
         Route::get('/create-books', 'SpectrumBooksController@create');
-    
+
     });
 
 

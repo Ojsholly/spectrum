@@ -12,6 +12,7 @@ use App\Http\Resources\LicenseResourceCollection;
 use App\Http\Resources\UsedLicensesResourceCollection;
 use App\User;
 use Illuminate\Http\Request;
+use DB;
 
 class SpectrumLicenseController extends Controller
 {
@@ -63,7 +64,7 @@ class SpectrumLicenseController extends Controller
             'code' => 'required|unique:access_codes',
             'books_contained' => 'required',
         ]);
-        
+
         $books_attached = $request->books_contained;
         $submitted_books_id = implode(",", $books_attached);
         // return $books_attached;
@@ -104,9 +105,9 @@ class SpectrumLicenseController extends Controller
                 return view('licenses.edit_license', ['license_id' => $uuid]);
             }
             return abort(404);
-            
+
         }
-        
+
     }
 
     public function remove_book(Request $request, $book_id) {
@@ -123,12 +124,12 @@ class SpectrumLicenseController extends Controller
                 } else {
                     abort(403, "Cannot Delete the last item", ['message', 'Cannot remove the last item']);
                 }
-                
+
             }
-            
+
         }
     }
-    
+
     public function distinctBook(Request $request) {
         $access_code = AccessCode::findByUuid($request->uuid);
         $exclude_books = explode(',', $access_code->books_contained);
@@ -147,8 +148,8 @@ class SpectrumLicenseController extends Controller
             'max_number_of_users' => 'required',
             'price' => 'required',
             'code' => 'required|unique:access_codes,code,'.$access_code->id,
-        ]); 
-        
+        ]);
+
         $licensed_books = $access_code->books_contained;
         if(count($request->books_contained) > 0) {
             $licensed_books = empty($licensed_books) ? implode(',', $request->books_contained) : $licensed_books . ',' . implode(',', $request->books_contained);
@@ -163,7 +164,7 @@ class SpectrumLicenseController extends Controller
             'max_number_of_users'   => $request->max_number_of_users,
             'duration'              => $request->duration
         ]);
-       
+
        return ['success', 'Books Successfully attached to the license'];
 
     }
@@ -189,7 +190,7 @@ class SpectrumLicenseController extends Controller
     public function load_thrashed_license() {
         return LicenseResourceCollection::collection(AccessCode::onlyTrashed()->orderBy('deleted_at', 'asc')->get());
     }
-    
+
     public function delete_by_force(Request $request) {
         $access_code = AccessCode::onlyTrashed()->where('uuid', $request->get('uuid'));
         $access_code->forceDelete();
@@ -209,7 +210,7 @@ class SpectrumLicenseController extends Controller
     public function all_used_licenses() {
         return UsedLicensesResourceCollection::collection(User::where('access_code', '<>', null)->paginate(10));
     }
-    
+
     public function findUser() {
         if($search = \Request::get('q')) {
             $users = User::where(function($query) use ($search) {
@@ -226,9 +227,29 @@ class SpectrumLicenseController extends Controller
         // return $users;
         return UsedLicensesResourceCollection::collection($users);
     }
-    
+
     public function view_accounts()
     {
         return view('licenses.view-accounts');
+    }
+
+    public function accounting_module()
+    {
+        $access_codes = AccessCode::all();
+        // dd($access_codes);
+
+        foreach ($access_codes as $access_code) {
+           $access_code->count = $this->count_license_usage($access_code->code);
+        }
+
+        return view('licenses.accounting-module', ["access_codes" => $access_codes]);
+    }
+
+    private function count_license_usage($access_code)
+    {
+        $count = DB::table('users')->where('access_code', $access_code)->count();
+
+        return $count;
+
     }
 }

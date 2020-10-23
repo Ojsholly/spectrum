@@ -9,6 +9,7 @@ use Auth;
 use App\User;
 use App\License;
 use App\Book;
+use DB;
 
 class SpectrumAdminDashboardController extends Controller
 {
@@ -37,7 +38,7 @@ class SpectrumAdminDashboardController extends Controller
         return view('admin.dashboard', compact('user', 'book'));
     }
 
-    
+
     public function logout()
     {
         Auth::guard('admin')->logout();
@@ -53,6 +54,24 @@ class SpectrumAdminDashboardController extends Controller
 
     public function audit_logs()
     {
-        return view('admin.audit-logs');
+        $logs = DB::table('audit_logs')->get();
+
+        foreach ($logs as $log) {
+            $log->admin = $this->fetch_admin($log->auid);
+            $log->subject = $this->fetch_admin($log->suid);
+        }
+
+        return view('admin.audit-logs', ['logs' => $logs]);
+    }
+
+    public function fetch_admin($uuid)
+    {
+        if ($uuid == null) {
+            return null;
+        }
+
+        $admin = Admin::all()->where('uuid', $uuid)->first();
+
+        return $admin->name;
     }
 }

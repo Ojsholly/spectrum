@@ -80,10 +80,10 @@ class DeveloperApiKeyController extends Controller
 
         // $validFrom = Carbon::createFromDate($request->valid_from);
         // $validTill = Carbon::createFromDate($request->valid_till);
-        
+
         $created_by = Auth::guard('admin')->user()->uuid;
         $present = Carbon::now();
-        
+
         $validFrom = new DateTime($request->valid_from);
         $validTill = new DateTime($request->valid_till);
         $duration = Carbon::now()->addDays($validTill->diff($validFrom)->format("%a"))->diffInDays();
@@ -97,13 +97,22 @@ class DeveloperApiKeyController extends Controller
             'valid_till' => $validTill,
             'created_by' => $created_by
         ]);
-        return ['success', 'Developer Key Generated Successfully'];
-        
 
-        
+
+            $auid = Auth::guard('admin')->user()->uuid;
+            $title = "Creation of New API Key.";
+            $action = " Creation of New API Key.(".$randomKey.")";
+            $ip_address = $request->ip();
+
+            log_activity($auid, $title, $action, null, $ip_address);
+
+        return ['success', 'Developer Key Generated Successfully'];
+
+
+
         // $check_can_use = $validFrom < $present;
         // $check_has_expired = $validTill < $present;
-        
+
         return ['success',Carbon::parse($duration)->diffForHumans()];
     }
 
@@ -116,10 +125,10 @@ class DeveloperApiKeyController extends Controller
     public function show($id)
     {
 
-        
+
     }
 
-    
+
 
     /**
      * Show the form for editing the specified resource.
@@ -153,12 +162,21 @@ class DeveloperApiKeyController extends Controller
 
         $validFrom = new DateTime($request->valid_from);
         $validTill = new DateTime($request->valid_till);
-        
+
         $key = DeveloperApiKey::where('duid', $id);
         $key->update([
             'valid_from' => $validFrom,
             'valid_till' => $validTill
         ]);
+
+
+        $auid = Auth::guard('admin')->user()->uuid;
+        $title = "Creation of New API Key.";
+        $action = "Editing an API Key.";
+        $ip_address = $request->ip();
+
+        log_activity($auid, $title, $action, null, $ip_address);
+
         return $request->all();
     }
 
@@ -168,14 +186,23 @@ class DeveloperApiKeyController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($developerKey)
+    public function destroy(Request $request, $developerKey)
     {
         Gate::forUser(Auth::guard('admin')->user())->authorize('isSuperAdmin');
         $status = DeveloperApiKey::where('duid', $developerKey)->first();
-        
+
         if(DeveloperApiKey::destroy($status->id)) {
             return response(['success', 'Api key removed']);
         }
+
+
+        $auid = Auth::guard('admin')->user()->uuid;
+        $title = "Removal of API Key.";
+        $action = "Removal of API Key";
+        $ip_address = $request->ip();
+
+        log_activity($auid, $title, $action, null, $ip_address);
+
         return response(['success', 'Unable to remove key']);
     }
 }

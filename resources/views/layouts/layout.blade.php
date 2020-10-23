@@ -24,7 +24,7 @@
   <!-- End layout styles -->
   <link rel="shortcut icon" href="{{ asset('images/Spectrum logo.png')}}" />
 
-  
+
   <!-- plugins:js -->
   <script src="{{ asset('vendors/js/vendor.bundle.base.js')}}" async></script>
 
@@ -54,7 +54,7 @@
         <div class="main-wrapper mdc-drawer-app-content">
         <!-- Header -->
         @include('layouts.partials.header')
-        
+
         <!-- Page Content -->
         @yield('content')
       </div>
@@ -74,7 +74,7 @@
   
   
   <script>
-   
+
 </script>
   <script>
     $(document).ready(function() {

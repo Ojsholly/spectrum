@@ -76,7 +76,7 @@
                         </nav>
                     </div>
                   </div>
-                
+
                 @if(Auth::guard('admin')->user()->can('isSuperAdmin'))
                     <div class="mdc-list-item mdc-drawer-item">
                         <a class="mdc-drawer-link" href="{{ url('/admin/accounts/activate-accounts') }}">

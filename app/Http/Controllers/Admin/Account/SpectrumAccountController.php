@@ -14,7 +14,7 @@ class SpectrumAccountController extends Controller
     public function __construct() {
         $this->middleware('auth.custom');
     }
-    
+
     public function index()
     {
         // $response = Gate::inspect('create');
@@ -55,27 +55,64 @@ class SpectrumAccountController extends Controller
         //
     }
 
-    public function switch_privilege($id)
+    public function switch_privilege(Request $request, $id)
     {
         Gate::forUser(Auth::guard('admin')->user())->authorize('isSuperAdmin');
         if(Admin::where('uuid', $id)->where('status', 1)->where('is_super_admin', 0)->update(['is_super_admin' => 1])){
-            return ['success', "User is now a Super Admin"];
+
+            $auid = Auth::guard('admin')->user()->uuid;
+            $suid = $id;
+            $title = "Role Upgrade";
+            $action = "Upgrade to Super Admin";
+            $ip_address = $request->ip();
+
+            log_activity($auid, $title, $action, $suid, $ip_address);
+
+                return ['success', "User is now a Super Admin"];
         }
         elseif(Admin::where('uuid', $id)->where('status', 1)->where('is_super_admin', 1)->update(['is_super_admin' => 0])) {
+
+            $auid = Auth::guard('admin')->user()->uuid;
+            $suid = $id;
+            $title = "Role Downgrade";
+            $action = "Downgrade to Admin";
+            $ip_address = $request->ip();
+
+            log_activity($auid, $title, $action, $suid, $ip_address);
+
             return ['success', "User is now an Admin"];
-        } 
+        }
     }
 
-    public function activate_account($id)
+    public function activate_account(Request $request, $id)
     {
         Gate::forUser(Auth::guard('admin')->user())->authorize('isSuperAdmin');
         if(Admin::where('uuid', $id)->where('status', 0)->update(['status' => 1])){
+
+            $auid = Auth::guard('admin')->user()->uuid;
+            $suid = $id;
+            $title = "Account Activation";
+            $action = "Activation of registered admin account.";
+            $ip_address = $request->ip();
+
+            log_activity($auid, $title, $action, $suid, $ip_address);
+
             return ['success', "Account Activated"];
         }
         elseif(Admin::where('uuid', $id)->where('status', 1)->update(['status' => 0])) {
+
+            $auid = Auth::guard('admin')->user()->uuid;
+            $suid = $id;
+            $title = "Account Deactivation";
+            $action = "Deactivation of active admin account.";
+
+            $ip_address = $request->ip();
+
+            log_activity($auid, $title, $action, $suid, $ip_address);
+
             return ['success', "Account Deactivated"];
-        } 
-        
+        }
+
     }
 
     public function update(Request $request, $id)
@@ -89,11 +126,21 @@ class SpectrumAccountController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {   
+    public function destroy(Request $request, $id)
+    {
         Gate::forUser(Auth::guard('admin')->user())->authorize('isSuperAdmin');
         $admin = Admin::where('uuid', $id);
         $admin->delete();
+
+        $auid = Auth::guard('admin')->user()->uuid;
+        $suid = $id;
+        $title = "Account Deletion";
+        $action = "Deletion of admin account.";
+
+        $ip_address = $request->ip();
+
+        log_activity($auid, $title, $action, $suid, $ip_address);
+
         return ['success', "User Account Deleted Successfully"];
     }
 }

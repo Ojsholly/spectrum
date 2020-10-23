@@ -4,8 +4,11 @@
 <main class="content-wrapper">
     <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-12">
         <div class="mdc-card p-0">
-            <h6 class="card-title card-padding pb-0">Uploaded Books </h6>
+            <h6 class="card-title card-padding pb-0">Restore Deleted Books </h6>
             @isset($books)
+            @empty($book)
+            <p class="text-center">No Deleted Books Yet.</p>
+            @else
             <div class="table-responsive">
                 <table class="table table-hoverable">
                     <thead>
@@ -29,14 +32,9 @@
                             <td>{{ $book->publisher }}</td>
                             <td>{{ date('Y-m-d', strtotime($book->date_published)) }}</td>
                             <td>
-                                <a href="{{ url('admin/books/view-book/'.$book->id) }}" class="mdc-button mdc-button--raised icon-button filled-button--primary">
+                                <a href="{{ url('admin/books/restore-book/'.$book->id) }}"
+                                    class="mdc-button mdc-button--raised icon-button filled-button--primary">
                                     <i class="material-icons mdc-button__icon">visibility</i>
-                                </a>&nbsp;
-                                <a href="{{ url('admin/books/delete-book/'.$book->id) }}" class="mdc-button mdc-button--raised icon-button filled-button--secondary">
-                                    <i class="material-icons mdc-button__icon">delete</i>
-                                </a>&nbsp;
-                                <a href="{{ url('admin/books/edit-book/'.$book->id) }}" class="mdc-button mdc-button--raised icon-button filled-button--success">
-                                    <i class="material-icons mdc-button__icon">colorize</i>
                                 </a>
                             </td>
                         </tr>
@@ -44,8 +42,9 @@
                     </tbody>
                 </table>
             </div>
+            @endempty
             @else
-            <p class="text-center">No Uploaded Books Yet.</p>
+            <p class="text-center">No Deleted Books Yet.</p>
             @endisset
         </div>
     </div>
